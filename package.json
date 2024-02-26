@@ -1,0 +1,21 @@
+{
+  "name": "bip39-checksum-generator",
+  "version": "1.0.0",
+  "description": "Used for generating 12-word, 18-word and 24-word BIP39 checksums.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.19",
+    "bip39": "^3.1.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.3.3"
+  }
+}
