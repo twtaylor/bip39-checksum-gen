@@ -32,10 +32,10 @@ function normalize(str?: string): string {
     return bytesToBinary(Array.from(hash)).slice(0, CS);
   }
   
-  export const getMnemonicWithChecksum = (mnemonic: string): string => {
-    const words = normalize(mnemonic).split(' ');
+  export const getMnemonicWithChecksum = (mnemonic: string, validateChecksum: boolean = true): string => {
+    const words = normalize(mnemonic).split(' ')
     if (words.length % 3 !== 0) {
-      throw new Error(INVALID_MNEMONIC);
+      throw new Error(INVALID_MNEMONIC)
     }
   
     // convert word indices to 11 bit binary strings
@@ -48,8 +48,6 @@ function normalize(str?: string): string {
           }
 
           const paddedEntropy = lpad(index.toString(2), '0', 11)
-
-          console.log(paddedEntropy)
   
           return paddedEntropy;
         },
@@ -59,17 +57,11 @@ function normalize(str?: string): string {
     // split the binary string into ENT/CS
     const dividerIndex = Math.floor(bits.length / 33) * 32;
 
-    console.log(dividerIndex)
-
     const entropyBits = bits.slice(0, dividerIndex);
 
-    console.log(bits)
-    console.log(entropyBits)
-  
     // the below bits are "wrong" for the purposes of checksum calculation
-    const checksumBits = bits.slice(dividerIndex);
-
-    console.log(checksumBits)
+    const checksumBits = bits.slice(dividerIndex)
+    const includedChecksum = binaryToByte(checksumBits)
   
     // calculate the checksum and compare
     const entropyBytes = entropyBits.match(/(.{1,8})/g)!.map(binaryToByte);
@@ -93,6 +85,42 @@ function normalize(str?: string): string {
         return bip39EnglishWordsArray![index];
       },
     );
+
+    if (validateChecksum && bip39EnglishWordsArray![includedChecksum] !== calculatedWords[calculatedWords.length - 1]) {
+      throw new Error('invalid checksum applied')
+    }
   
     return calculatedWords.join(' ');
+  }
+
+  export const getChecksum = (mnemonic: string): string => {
+    const words = normalize(mnemonic).split(' ');
+    if (words.length % 3 !== 0) {
+      throw new Error(INVALID_MNEMONIC);
+    }
+  
+    // convert word indices to 11 bit binary strings
+    const bits = words
+      .map(
+        (word: string): string => {
+          const index = bip39EnglishWordsArray.indexOf(word);
+          if (index === -1) {
+            throw new Error(INVALID_MNEMONIC);
+          }
+
+          const paddedEntropy = lpad(index.toString(2), '0', 11)
+  
+          return paddedEntropy;
+        },
+      )
+      .join('');
+  
+    // split the binary string into ENT/CS
+    const dividerIndex = Math.floor(bits.length / 33) * 32;
+
+    // the below bits are "wrong" for the purposes of checksum calculation
+    const checksumBits = bits.slice(dividerIndex)
+    const includedChecksum = binaryToByte(checksumBits)
+
+    return bip39EnglishWordsArray![includedChecksum];
   }
